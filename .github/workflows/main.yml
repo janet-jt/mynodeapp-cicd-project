@@ -2,11 +2,14 @@ name: CI demo
 
 on:
   push:
-    branches: [ main ]
+    # branches: [ main ]
+    branches:
+      - '**' # all branches
   pull_request:
 
 jobs:
   run_unit_tests:
+    if: "!contains(github.event.head_commit.message, 'taking-notes')"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -22,6 +25,7 @@ jobs:
         run: echo "Cleaning up temporary files..."
           
   run_lint_tests:
+    if: "!contains(github.event.head_commit.message, 'taking-notes')"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -37,6 +41,7 @@ jobs:
         run: echo "Cleaning up temporary files..."
 
   build_image:
+    if: github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, 'taking-notes')
     runs-on: ubuntu-latest
     needs: [run_unit_tests, run_lint_tests]
     steps:
@@ -50,6 +55,7 @@ jobs:
         run: echo "Tagging teh docker image"
 
   push_image:
+    if: github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, 'taking-notes')
     runs-on: ubuntu-latest
     needs: build_image
     steps:
@@ -63,6 +69,7 @@ jobs:
         run: echo "Pushing docker image to registry..."
 
   deploy_image:
+    if: github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, 'taking-notes')
     runs-on: ubuntu-latest
     needs: push_image
     steps:
