@@ -15,10 +15,8 @@ jobs:
       - name: Before script - prepare test data
         run: | 
           echo "Preparing test data..."
-          pwd
-          ls
-          mkdir test-data
-          ls
+          chmod +x prepare-test.sh
+          ./prepare-test.sh
 
       - name: Script - run unit tests
         run: echo "Running unit tests..."
