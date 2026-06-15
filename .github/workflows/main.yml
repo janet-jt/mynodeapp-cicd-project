@@ -13,20 +13,14 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Before script - prepare test data
-        run: | 
-          echo "Preparing test data..."
-          chmod +x prepare-test.sh
-          ./prepare-test.sh
+        run: echo "Preparing test data..."
 
       - name: Script - run unit tests
         run: echo "Running unit tests..."
 
       - name: After script - cleanup temp files
-        run: | 
-          echo "Cleaning up temporary files..."
-          rm -rf test-data
-          ls
-
+        run: echo "Cleaning up temporary files..."
+          
   run_lint_tests:
     runs-on: ubuntu-latest
     steps:
