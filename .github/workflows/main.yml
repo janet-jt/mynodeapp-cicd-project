@@ -18,9 +18,9 @@ jobs:
         run: |
           npm --version
           cd app
-          npm install
+          sudo npm install
 
       - name: Script - run unit tests
         run: |
           echo "Running unit tests for micro service ${{ vars.MICRO_SERVICE_NAME }} ..."
-          npm test
+          sudo npm test
