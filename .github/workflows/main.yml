@@ -24,4 +24,5 @@ jobs:
       - name: Script - run unit tests
         run: |
           echo "Running unit tests for micro service ${{ vars.MICRO_SERVICE_NAME }} ..."
+          cd app
           npm test
