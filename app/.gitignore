@@ -1,1 +1,4 @@
 node_modules/
+junit.xml
+package-lock.json
+*tgz
