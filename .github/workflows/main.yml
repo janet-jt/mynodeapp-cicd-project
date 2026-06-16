@@ -20,7 +20,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Before script - prepare test data
-        run: echo "Preparing test data..."
+        env:
+            MESSAGE: "Preparing test data..."
+        run: echo "$MESSAGE"
 
       - name: Script - run unit tests
         run: echo "Running unit tests for micro service ${{ vars.MICRO_SERVICE_NAME }} ..."
@@ -56,9 +58,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build docker image
-        env:
-          MESSAGE: "Building the docker image $DOCKER_IMAGE_NAME:$DOCKER_TAG..."
-        run: echo "$MESSAGE"
+        run: echo "Building the docker image $DOCKER_IMAGE_NAME:$DOCKER_TAG..."
 
       - name: Tag docker image
         run: echo "Tagging teh docker image $DOCKER_IMAGE_NAME:$DOCKER_TAG"
