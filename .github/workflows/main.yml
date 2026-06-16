@@ -2,19 +2,12 @@ name: CI demo
 
 on:
   push:
-    # branches: [ main ]
-    branches:
-      - '**' # all branches
+    branches: [ main ]
   pull_request:
-
-env:
-  DOCKER_IMAGE_NAME: my-app
-  DOCKER_TAG: v1.0
 
 jobs:
   run_unit_tests:
     if: github.event.head_commit == null || !contains(github.event.head_commit.message, 'taking-notes')
-    # runs-on: ubuntu-latest
     runs-on: [self-hosted, local]
     container: node:26-alpine
     steps:
@@ -22,76 +15,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Before script - prepare test data
-        env:
-            MESSAGE: "Preparing test data..."
-        run: echo "$MESSAGE"
+        run: |
+          npm --version
+          cd app
+          npm install
 
       - name: Script - run unit tests
         run: |
           echo "Running unit tests for micro service ${{ vars.MICRO_SERVICE_NAME }} ..."
-          npm --version
-
-      - name: After script - cleanup temp files
-        run: echo "Cleaning up temporary files..."
-          
-  run_lint_tests:
-    if: github.event.head_commit == null || !contains(github.event.head_commit.message, 'taking-notes')
-    # runs-on: ubuntu-latest
-    runs-on: [self-hosted, local]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Before script - prepare test data
-        run: echo "Preparing test data..."
-
-      - name: Script - run lint tests
-        run: echo "Running lint tests..."
-
-      - name: After script - cleanup temp files
-        run: echo "Cleaning up temporary files..."
-
-  build_image:
-    if: github.ref == 'refs/heads/main' && (github.event.head_commit == null || !contains(github.event.head_commit.message, 'taking-notes'))
-    # runs-on: ubuntu-latest
-    runs-on: [self-hosted, aws]
-    needs: [run_unit_tests, run_lint_tests]
-    # env:
-    #   DOCKER_IMAGE_NAME: my-app
-    #   DOCKER_TAG: v1.0
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Build docker image
-        run: echo "Building the docker image $DOCKER_IMAGE_NAME:$DOCKER_TAG..."
-
-      - name: Tag docker image
-        run: echo "Tagging teh docker image $DOCKER_IMAGE_NAME:$DOCKER_TAG"
-
-  push_image:
-    if: github.ref == 'refs/heads/main' && (github.event.head_commit == null || !contains(github.event.head_commit.message, 'taking-notes'))
-    # runs-on: ubuntu-latest
-    runs-on: [self-hosted, aws]
-    needs: build_image
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Login to docker registry
-        run: echo "Logging into docker registry..."
-
-      - name: Push docker image
-        run: echo "Pushing docker image $DOCKER_IMAGE_NAME:$DOCKER_TAG to registry..."
-
-  deploy_image:
-    if: github.ref == 'refs/heads/main' && (github.event.head_commit == null || !contains(github.event.head_commit.message, 'taking-notes'))
-    # runs-on: ubuntu-latest
-    runs-on: [self-hosted, aws]
-    needs: push_image
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Deploy to dev server
-        run: echo "Deploying new docker image $DOCKER_IMAGE_NAME:$DOCKER_TAG to dev server ${{ vars.DEPLOYMENT_ENVIRONMENT }}..."
+          npm test
