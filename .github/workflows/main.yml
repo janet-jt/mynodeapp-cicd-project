@@ -15,6 +15,7 @@ jobs:
   run_unit_tests:
     if: github.event.head_commit == null || !contains(github.event.head_commit.message, 'taking-notes')
     runs-on: ubuntu-latest
+    container: node:26-alpine
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -25,7 +26,9 @@ jobs:
         run: echo "$MESSAGE"
 
       - name: Script - run unit tests
-        run: echo "Running unit tests for micro service ${{ vars.MICRO_SERVICE_NAME }} ..."
+        run: |
+          echo "Running unit tests for micro service ${{ vars.MICRO_SERVICE_NAME }} ..."
+          npm --version
 
       - name: After script - cleanup temp files
         run: echo "Cleaning up temporary files..."
