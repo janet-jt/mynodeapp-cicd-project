@@ -16,11 +16,12 @@ jobs:
 
       - name: Before script - prepare test data
         run: |
+          whoami
           npm --version
           cd app
-          sudo npm install
+          npm install
 
       - name: Script - run unit tests
         run: |
           echo "Running unit tests for micro service ${{ vars.MICRO_SERVICE_NAME }} ..."
-          sudo npm test
+          npm test
