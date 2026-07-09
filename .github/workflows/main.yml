@@ -39,11 +39,15 @@ jobs:
           report_paths: app/junit.xml
           detailed_summary: true
           include_passed: true
+          
   build_and_push_image:
     needs: run_unit_tests
     runs-on: [self-hosted, local]
 
     steps:
+      - name: Fix permissions in workspace
+        run: sudo chown -R $USER:$USER $GITHUB_WORKSPACE
+        
       - name: Check out repository
         uses: actions/checkout@v4
 
