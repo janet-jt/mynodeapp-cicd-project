@@ -4,6 +4,7 @@ on:
   push:
     branches: [ main ]
   pull_request:
+    branches: [ main ]
 
 jobs:
   run_unit_tests:
@@ -11,18 +12,16 @@ jobs:
     runs-on: [self-hosted, local]
     container: node:26-alpine
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Before script - prepare test data
+      - name: Install dependencies
+        working-directory: app
         run: |
-          whoami
-          npm --version
-          cd app
           npm install
 
-      - name: Script - run unit tests
+      - name: Run unit tests
+        working-directory: app
         run: |
           echo "Running unit tests for micro service ${{ vars.MICRO_SERVICE_NAME }} ..."
-          cd app
           npm test
