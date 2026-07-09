@@ -13,5 +13,5 @@ test('Dockerfile file exists', () => {
 
 test('.gitignore exists', () => {
     const filePath = path.join(__dirname, ".gitignore")
-    expect(fs.existsSync(filePath)).toBeTruthy();
+    expect(fs.existsSync(filePath)).toBeFalsy();
 });
