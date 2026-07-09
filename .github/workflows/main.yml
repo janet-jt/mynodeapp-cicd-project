@@ -84,12 +84,14 @@ jobs:
       - name: Fix permissions in workspace
         run: sudo chown -R $USER:$USER $GITHUB_WORKSPACE
 
-      - name: Set correct permissions on SSH key
-        run: chmod 400 "${{ secrets.CONNECT_EC2 }}"
+      - name: Write SSH key to file
+        run: |
+          echo "${{ secrets.CONNECT_EC2 }}" > id_ec2.pem
+          chmod 400 id_ec2.pem
         
       - name: Deploy to dev via SSH
         run: |
           ssh -o StrictHostKeyChecking=no \
-            -i "${{ secrets.CONNECT_EC2 }}" \
+            -i id_ec2.pem \
             ec2-user@${{ secrets.DEPLOY_HOST }} \
             "echo '${{ secrets.DOCKER_TOKEN }}' | docker login ghcr.io -u '${{ github.actor }}' --password-stdin && docker run -d -p 3000:3000 ${IMAGE_NAME}:${IMAGE_TAG}"
