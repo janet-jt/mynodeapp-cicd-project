@@ -1,13 +1,18 @@
-FROM node:13-alpine
+FROM node:26-alpine
 
+# Set working directory inside container
 RUN mkdir -p /usr/app
-
-COPY ./app /usr/app/
-
 WORKDIR /usr/app
 
+# 1) Copy package.json and package-lock.json from app
+COPY app/package*.json ./
+
+# 2) Install dependencies
 RUN npm install
 
-EXPOSE 3000
+# 3) Copy the rest of the app source
+COPY app/ .
 
-CMD ["node", "/usr/app/server.js"]
+# 4) Expose port & start
+EXPOSE 3000
+CMD ["node", "server.js"]
