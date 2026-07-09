@@ -1,0 +1,28 @@
+name: CI demo
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  run_unit_tests:
+    if: github.event.head_commit == null || !contains(github.event.head_commit.message, 'taking-notes')
+    runs-on: [self-hosted, local]
+    container: node:26-alpine
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Before script - prepare test data
+        run: |
+          whoami
+          npm --version
+          cd app
+          npm install
+
+      - name: Script - run unit tests
+        run: |
+          echo "Running unit tests for micro service ${{ vars.MICRO_SERVICE_NAME }} ..."
+          cd app
+          npm test
