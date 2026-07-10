@@ -1,4 +1,4 @@
-FROM node:26-alpine
+FROM node:13-alpine
 
 # Set working directory inside container
 RUN mkdir -p /usr/app
