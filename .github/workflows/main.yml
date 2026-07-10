@@ -68,13 +68,17 @@ jobs:
       - name: Build and push Docker Image
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./Dockerfile
           push: true
           tags: |
             ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
   deploy_to_dev:
     needs: build_and_push_image
     runs-on: [self-hosted, local]
+
+    environment:
+      name: development
+      url: ${{ vars.DEV_ENDPOINT }}
   
     env:
       IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}/microservice/${{ vars.MICRO_SERVICE_NAME }}
