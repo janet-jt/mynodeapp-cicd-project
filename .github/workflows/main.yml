@@ -15,6 +15,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Show workspace path (debug)
+        run: |
+          echo "GITHUB_WORKSPACE = $GITHUB_WORKSPACE"
+          ls -R "$GITHUB_WORKSPACE"
   
       - name: Cache app/node_modules
         id: node_cache
@@ -50,101 +55,101 @@ jobs:
           detailed_summary: true
           include_passed: true
           
-  build_and_push_image:
-    needs: run_unit_tests
-    runs-on: [self-hosted, local]
+  # build_and_push_image:
+  #   needs: run_unit_tests
+  #   runs-on: [self-hosted, local]
 
-    env:
-      IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}/microservice/${{ vars.MICRO_SERVICE_NAME }}
+  #   env:
+  #     IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}/microservice/${{ vars.MICRO_SERVICE_NAME }}
 
-    steps:
-      - name: Fix permissions in workspace
-        run: sudo chown -R $USER:$USER $GITHUB_WORKSPACE
+  #   steps:
+  #     - name: Fix permissions in workspace
+  #       run: sudo chown -R $USER:$USER $GITHUB_WORKSPACE
         
-      - name: Check out repository
-        uses: actions/checkout@v4
+  #     - name: Check out repository
+  #       uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-        with:
-          driver: docker
+  #     - name: Set up Docker Buildx
+  #       uses: docker/setup-buildx-action@v3
+  #       with:
+  #         driver: docker
 
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.DOCKER_TOKEN }}
+  #     - name: Log in to GHCR
+  #       uses: docker/login-action@v3
+  #       with:
+  #         registry: ghcr.io
+  #         username: ${{ github.actor }}
+  #         password: ${{ secrets.DOCKER_TOKEN }}
 
-      - name: Read version from package.json and set IMAGE_TAG into build.env
-        run: |
-          IMAGE_VERSION=$(cat app/package.json | jq -r '.version')
-          IMAGE_TAG="${IMAGE_VERSION}-${{ github.run_number }}"
-          echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_ENV
-          echo "IMAGE_TAG=${IMAGE_TAG}" > build.env
+  #     - name: Read version from package.json and set IMAGE_TAG into build.env
+  #       run: |
+  #         IMAGE_VERSION=$(cat app/package.json | jq -r '.version')
+  #         IMAGE_TAG="${IMAGE_VERSION}-${{ github.run_number }}"
+  #         echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_ENV
+  #         echo "IMAGE_TAG=${IMAGE_TAG}" > build.env
         
-      - name: Build and push Docker Image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile
-          push: true
-          tags: |
-            ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
-          no-cache: true
+  #     - name: Build and push Docker Image
+  #       uses: docker/build-push-action@v5
+  #       with:
+  #         context: .
+  #         file: ./Dockerfile
+  #         push: true
+  #         tags: |
+  #           ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+  #         no-cache: true
 
-      - name: Upload build.env artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-env
-          path: build.env
+  #     - name: Upload build.env artifact
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: build-env
+  #         path: build.env
 
-  deploy_to_dev:
-    needs: build_and_push_image
-    runs-on: [self-hosted, local]
+  # deploy_to_dev:
+  #   needs: build_and_push_image
+  #   runs-on: [self-hosted, local]
 
-    environment:
-      name: development
-      url: ${{ vars.DEV_ENDPOINT }}
+  #   environment:
+  #     name: development
+  #     url: ${{ vars.DEV_ENDPOINT }}
 
-    env:
-      IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}/microservice/${{ vars.MICRO_SERVICE_NAME }}
+  #   env:
+  #     IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}/microservice/${{ vars.MICRO_SERVICE_NAME }}
   
-    steps:
-      - name: Fix permissions in workspace
-        run: sudo chown -R $USER:$USER $GITHUB_WORKSPACE
+  #   steps:
+  #     - name: Fix permissions in workspace
+  #       run: sudo chown -R $USER:$USER $GITHUB_WORKSPACE
 
-      - name: Write SSH key to file
-        run: |
-          echo "${{ secrets.CONNECT_EC2 }}" > id_ec2.pem
-          chmod 400 id_ec2.pem
+  #     - name: Write SSH key to file
+  #       run: |
+  #         echo "${{ secrets.CONNECT_EC2 }}" > id_ec2.pem
+  #         chmod 400 id_ec2.pem
   
-      - name: Download build.env artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: build-env
+  #     - name: Download build.env artifact
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: build-env
   
-      - name: Load IMAGE_TAG from build.env into environment
-        run: |
-          set -a
-          source build.env      # loads IMAGE_TAG into shell
-          set +a
-          echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_ENV
+  #     - name: Load IMAGE_TAG from build.env into environment
+  #       run: |
+  #         set -a
+  #         source build.env      # loads IMAGE_TAG into shell
+  #         set +a
+  #         echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_ENV
 
-      - name: Create docker-compose.yaml
-        run: |
-          cat > docker-compose.yaml <<EOF
-          version: "3.3"
-          services:
-            app:
-              image: ${IMAGE_NAME}:${IMAGE_TAG}
-              ports:
-                - "3000:3000"
-          EOF
+  #     - name: Create docker-compose.yaml
+  #       run: |
+  #         cat > docker-compose.yaml <<EOF
+  #         version: "3.3"
+  #         services:
+  #           app:
+  #             image: ${IMAGE_NAME}:${IMAGE_TAG}
+  #             ports:
+  #               - "3000:3000"
+  #         EOF
               
-      - name: Deploy to dev via SSH
-        run: |
-          scp -o StrictHostKeyChecking=no -i id_ec2.pem ./docker-compose.yaml ec2-user@${{ secrets.DEPLOY_HOST }}:/home/ec2-user/
+  #     - name: Deploy to dev via SSH
+  #       run: |
+  #         scp -o StrictHostKeyChecking=no -i id_ec2.pem ./docker-compose.yaml ec2-user@${{ secrets.DEPLOY_HOST }}:/home/ec2-user/
           ssh -o StrictHostKeyChecking=no \
             -i id_ec2.pem \
             ec2-user@${{ secrets.DEPLOY_HOST }} \
