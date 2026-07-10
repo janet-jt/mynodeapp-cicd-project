@@ -46,6 +46,7 @@ jobs:
 
     env:
       IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}/microservice/${{ vars.MICRO_SERVICE_NAME }}
+      IMAGE_TAG: ${{ vars.DOCKER_TAG }}
 
     steps:
       - name: Fix permissions in workspace
@@ -73,7 +74,7 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            ${{ env.IMAGE_NAME }}:${{ vars.DOCKER_TAG }}
+            ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
           no-cache: true
 
   deploy_to_dev:
@@ -83,6 +84,10 @@ jobs:
     environment:
       name: development
       url: ${{ vars.DEV_ENDPOINT }}
+
+    env:
+      IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}/microservice/${{ vars.MICRO_SERVICE_NAME }}
+      IMAGE_TAG: ${{ vars.DOCKER_TAG }}
   
     steps:
       - name: Fix permissions in workspace
@@ -92,7 +97,14 @@ jobs:
         run: |
           echo "${{ secrets.CONNECT_EC2 }}" > id_ec2.pem
           chmod 400 id_ec2.pem
-        
+
+      - name: Create .env for Docker Compose
+        run: |
+          cat > .env <<EOF
+          IMAGE_NAME=${IMAGE_NAME}
+          IMAGE_TAG=${IMAGE_TAG}
+          EOF
+              
       - name: Deploy to dev via SSH
         run: |
           scp -o StrictHostKeyChecking=no -i id_ec2.pem ./docker-compose.yaml ec2-user@${{ secrets.DEPLOY_HOST }}:/home/ec2-user/
