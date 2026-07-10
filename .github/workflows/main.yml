@@ -150,7 +150,7 @@ jobs:
   #     - name: Deploy to dev via SSH
   #       run: |
   #         scp -o StrictHostKeyChecking=no -i id_ec2.pem ./docker-compose.yaml ec2-user@${{ secrets.DEPLOY_HOST }}:/home/ec2-user/
-          ssh -o StrictHostKeyChecking=no \
-            -i id_ec2.pem \
-            ec2-user@${{ secrets.DEPLOY_HOST }} \
-            "echo '${{ secrets.DOCKER_TOKEN }}' | docker login ghcr.io -u '${{ github.actor }}' --password-stdin && docker compose down && docker compose up -d"
+  #         ssh -o StrictHostKeyChecking=no \
+  #           -i id_ec2.pem \
+  #           ec2-user@${{ secrets.DEPLOY_HOST }} \
+  #           "echo '${{ secrets.DOCKER_TOKEN }}' | docker login ghcr.io -u '${{ github.actor }}' --password-stdin && docker compose down && docker compose up -d"
