@@ -98,11 +98,15 @@ jobs:
           echo "${{ secrets.CONNECT_EC2 }}" > id_ec2.pem
           chmod 400 id_ec2.pem
 
-      - name: Create .env for Docker Compose
+      - name: Create docker-compose.yaml
         run: |
-          cat > .env <<EOF
-          IMAGE_NAME=${IMAGE_NAME}
-          IMAGE_TAG=${IMAGE_TAG}
+          cat > docker-compose.yaml <<EOF
+          version: "3.3"
+          services:
+            app:
+              image: ${IMAGE_NAME}:${IMAGE_TAG}
+              ports:
+                - "3000:3000"
           EOF
               
       - name: Deploy to dev via SSH
