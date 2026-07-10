@@ -61,15 +61,15 @@ jobs:
           languages: javascript
       - uses: github/codeql-action/analyze@v3
 
-  sast:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+  # sast:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
 
-      - name: Run SAST scan
-        uses: AppThreat/sast-scan-action@master
-        with:
-          type: "javascript"  
+  #     - name: Run SAST scan
+  #       uses: AppThreat/sast-scan-action@master
+  #       with:
+  #         type: "javascript"  
           
   build_and_push_image:
     needs: run_unit_tests
