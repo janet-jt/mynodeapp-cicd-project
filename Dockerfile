@@ -8,7 +8,8 @@ WORKDIR /usr/app
 COPY app/package*.json ./
 
 # 2) Install dependencies
-RUN npm install
+# RUN npm install
+RUN rm -rf node_modules package-lock.json && npm install
 
 # 3) Copy the rest of the app source
 COPY app/ .
