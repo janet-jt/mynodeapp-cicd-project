@@ -112,6 +112,7 @@ jobs:
         
       - name: Deploy to dev via SSH
         run: |
+          scp -o StrictHostKeyChecking=no -i id_ec2.pem ./docker=compose.yaml ec2-user@${{ secrets.DEPLOY_HOST }}:/home/ec2-user
           ssh -o StrictHostKeyChecking=no \
             -i id_ec2.pem \
             ec2-user@${{ secrets.DEPLOY_HOST }} \
