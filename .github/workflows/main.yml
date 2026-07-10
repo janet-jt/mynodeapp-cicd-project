@@ -16,25 +16,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # - name: Show workspace path (debug)
-      #   run: |
-      #     echo "GITHUB_WORKSPACE = $GITHUB_WORKSPACE"
-      #     ls -R "$GITHUB_WORKSPACE"
-  
-      # - name: Cache app/node_modules
-      #   id: node_cache
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: app/node_modules
-      #     key: ${{ runner.os }}-node-${{ hashFiles('app/package-lock.json') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-node-
-  
-      - name: Install dependencies if cache miss
-        # if: steps.node_cache.outputs.cache-hit != 'true'
+      - name: Check if app/node_modules exists and install only if needed
         working-directory: app
-        run: npm install
-  
+        run: |
+          echo "Workspace inside container: $PWD"
+          if [ -d node_modules ]; then
+            echo "node_modules already exists, skipping npm install"
+          else
+            echo "node_modules not found, running npm install"
+            npm install
+          fi
+    
       - name: Run unit tests
         working-directory: app
         run: |
