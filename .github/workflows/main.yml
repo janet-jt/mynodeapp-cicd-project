@@ -46,6 +46,15 @@ jobs:
           report_paths: app/junit.xml
           detailed_summary: true
           include_passed: true
+
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+      - uses: github/codeql-action/analyze@v3
           
   build_and_push_image:
     needs: run_unit_tests
