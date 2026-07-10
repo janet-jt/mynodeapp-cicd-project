@@ -7,41 +7,41 @@ on:
     branches: [ main ]
 
 jobs:
-  # run_unit_tests:
-  #   if: github.event.head_commit == null || !contains(github.event.head_commit.message, 'taking-notes')
-  #   runs-on: [self-hosted, local]
-  #   container: node:26-alpine
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v4
+  run_unit_tests:
+    if: github.event.head_commit == null || !contains(github.event.head_commit.message, 'taking-notes')
+    runs-on: [self-hosted, local]
+    container: node:26-alpine
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-  #     - name: Install dependencies
-  #       working-directory: app
-  #       run: |
-  #         npm install
+      - name: Install dependencies
+        working-directory: app
+        run: |
+          npm install
 
-  #     - name: Run unit tests
-  #       working-directory: app
-  #       run: |
-  #         echo "Running unit tests for micro service ${{ vars.MICRO_SERVICE_NAME }} ..."
-  #         npm test
+      - name: Run unit tests
+        working-directory: app
+        run: |
+          echo "Running unit tests for micro service ${{ vars.MICRO_SERVICE_NAME }} ..."
+          npm test
           
-  #     - name: Upload JUnit test report
-  #       if: always()
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: junit-report
-  #         path: app/junit.xml
+      - name: Upload JUnit test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-report
+          path: app/junit.xml
 
-  #     - name: Publish JUnit report
-  #       uses: mikepenz/action-junit-report@v6.4.2
-  #       with:
-  #         report_paths: app/junit.xml
-  #         detailed_summary: true
-  #         include_passed: true
+      - name: Publish JUnit report
+        uses: mikepenz/action-junit-report@v6.4.2
+        with:
+          report_paths: app/junit.xml
+          detailed_summary: true
+          include_passed: true
           
   build_and_push_image:
-    # needs: run_unit_tests
+    needs: run_unit_tests
     runs-on: [self-hosted, local]
 
     env:
