@@ -5,11 +5,10 @@ RUN mkdir -p /usr/app
 WORKDIR /usr/app
 
 # 1) Copy package.json and package-lock.json from app
-COPY app/package*.json ./
+COPY app/package.json ./
 
 # 2) Install dependencies
-# RUN npm install
-RUN rm -rf node_modules package-lock.json && npm install
+RUN npm install
 
 # 3) Copy the rest of the app source
 COPY app/ .
