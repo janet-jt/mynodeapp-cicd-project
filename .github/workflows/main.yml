@@ -7,36 +7,15 @@ on:
     branches: [ main ]
 
 jobs:
-  build_cache:
-    if: github.event.head_commit == null || !contains(github.event.head_commit.message, 'taking-notes')
-    runs-on: [self-hosted, local]
-    container: node:26-alpine
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Node_modules cache
-        uses: actions/cache@v4
-        with:
-          path: app/node_modules
-          key: ${{ runner.os }}-node-${{ github.ref_name }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Install dependencies (build cache)
-        working-directory: app
-        run: |
-          npm install
-        
   run_unit_tests:
     if: github.event.head_commit == null || !contains(github.event.head_commit.message, 'taking-notes')
-    needs: build_cache
     runs-on: [self-hosted, local]
     container: node:26-alpine
+  
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
+  
       - name: Restore app/node_modules cache
         id: node_cache
         uses: actions/cache@v4
@@ -45,13 +24,13 @@ jobs:
           key: ${{ runner.os }}-node-${{ github.ref_name }}
           restore-keys: |
             ${{ runner.os }}-node-
-
-      - name: Install dependencies only if cache miss
+  
+      - name: Install dependencies if cache miss
         if: steps.node_cache.outputs.cache-hit != 'true'
         working-directory: app
         run: |
           npm install
-
+  
       - name: Run unit tests
         working-directory: app
         run: |
