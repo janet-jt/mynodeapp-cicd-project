@@ -167,13 +167,6 @@ jobs:
         run: echo "running performance testing"
 
   deploy_to_prod:
-    on:
-    workflow_dispatch:
-      inputs:
-        image_tag:
-          description: "Deploy to production"
-          required: true
-          type: string
     needs: run_performance_tests
     uses: ./.github/workflows/deploy.yml
     with:
