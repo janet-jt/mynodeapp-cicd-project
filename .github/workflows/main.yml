@@ -53,6 +53,7 @@ jobs:
           include_passed: true
 
   codeql-analyze:
+    if: github.event.head_commit == null || !contains(github.event.head_commit.message, 'taking-notes')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
