@@ -18,9 +18,6 @@ on:
       compose_project_name:
         required: true
         type: string
-      ssh_host:
-        required: true
-        type: string
       compose_file_name:
         required: true
         type: string
@@ -28,6 +25,8 @@ on:
       CONNECT_EC2:
         required: true
       DOCKER_TOKEN:
+        required: true
+      SSH_HOST:
         required: true
 
 jobs:
@@ -76,6 +75,6 @@ jobs:
 
       - name: Deploy via SSH
         run: |
-          scp -o StrictHostKeyChecking=no -i id_ec2.pem ./${{ inputs.compose_file_name }} ec2-user@${ inputs.ssh_host }}:/home/ec2-user/
-          ssh -o StrictHostKeyChecking=no -i id_ec2.pem ec2-user@${{ inputs.ssh_host }} \
+          scp -o StrictHostKeyChecking=no -i id_ec2.pem ./${{ inputs.compose_file_name }} ec2-user@${ secrets.SSH_HOST }}:/home/ec2-user/
+          ssh -o StrictHostKeyChecking=no -i id_ec2.pem ec2-user@${{ secrets.SSH_HOST }} \
           "echo '${{ secrets.DOCKER_TOKEN }}' | docker login ghcr.io -u '${{ github.actor }}' --password-stdin && export COMPOSE_PROJECT_NAME=${{ env.COMPOSE_PROJECT_NAME }} && docker compose -f ${{ inputs.compose_file_name }} down && docker compose -f ${{ inputs.compose_file_name }} up -d"
