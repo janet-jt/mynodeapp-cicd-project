@@ -140,7 +140,8 @@ jobs:
     needs: build_and_push_image
     uses: ./.github/workflows/deploy.yml
     with:
-      runs_on: '"ubuntu-latest"'
+      # runs_on: '"ubuntu-latest"'
+      runs_on: '["self-hosted","local"]'
       env_name: "staging"
       endpoint: ${{ vars.STAGING_ENDPOINT }}
       dc_app_port: 4000
