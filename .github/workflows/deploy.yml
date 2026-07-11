@@ -1,0 +1,78 @@
+name: Deploy microservice
+
+on:
+  workflow_call:
+    inputs:
+      env_name:
+        required: true
+        type: string
+      endpoint:
+        required: true
+        type: string
+      dc_app_port:
+        required: true
+        type: number
+      compose_project_name:
+        required: true
+        type: string
+      ssh_host:
+        required: true
+        type: string
+      compose_file_name:
+        required: true
+        type: string
+    secrets:
+      CONNECT_EC2:
+        required: true
+      DOCKER_TOKEN:
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.env_name }}
+      url: ${{ inputs.endpoint }}
+    
+    env:
+      IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}/microservice/${{ vars.MICRO_SERVICE_NAME }}
+      DC_APP_PORT: ${{ inputs.dc_app_port }}
+      COMPOSE_PROJECT_NAME: ${{ inputs.compose_project_name }}
+
+    steps:
+      - name: Fix permissions in workspace
+        run: sudo chown -R $USER:$USER $GITHUB_WORKSPACE
+
+      - name: Write SSH key to file
+        run: |
+          echo "${{ secrets.CONNECT_EC2 }}" > id_ec2.pem
+          chmod 400 id_ec2.pem
+
+      - name: Download build.env artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build-env
+
+      - name: Load IMAGE_TAG from build.env into environment
+        run: |
+          set -a
+          source build.env
+          set +a
+          echo "IMAGE_TAG=${ IMAGE_TAG }" >> $GITHUB_ENV
+
+      - name: Create docker-compose file
+        run: |
+            cat > ${{ inputs.compose_file_name }} << EOF
+            version: "3.3"
+            services:
+              app:
+                image: ${ IMAGE_NAME }:${ IMAGE_TAG }
+                ports:
+                  - ${DC_APP_PORT}:3000
+            EOF
+
+      - name: Deploy via SSH
+        run: |
+          scp -o StrictHostKeyChecking=no -i id_ec2.pem ./${{ inputs.compose_file_name }} ec2-user@${ inputs.ssh_host }}:/home/ec2-user/
+          ssh -o StrictHostKeyChecking=no -i id_ec2.pem ec2-user@${{ inputs.ssh_host }} \
+          "echo '${{ secrets.DOCKER_TOKEN }}' | docker login ghcr.io -u '${{ github.actor }}' --password-stdin && export COMPOSE_PROJECT_NAME=${{ env.COMPOSE_PROJECT_NAME }} && docker compose -f ${{ inputs.compose_file_name }} down && docker compose -f ${{ inputs.compose_file_name }} up -d"
