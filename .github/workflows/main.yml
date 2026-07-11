@@ -123,107 +123,30 @@ jobs:
 
   deploy_to_dev:
     needs: build_and_push_image
-    runs-on: [self-hosted, local]
-
-    environment:
-      name: development
-      url: ${{ vars.DEV_ENDPOINT }}
-
-    env:
-      IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}/microservice/${{ vars.MICRO_SERVICE_NAME }}
-      DC_APP_PORT: 3000
-      COMPOSE_PROJECT_NAME: dev
-  
-    steps:
-      - name: Fix permissions in workspace
-        run: sudo chown -R $USER:$USER $GITHUB_WORKSPACE
-
-      - name: Write SSH key to file
-        run: |
-          echo "${{ secrets.CONNECT_EC2 }}" > id_ec2.pem
-          chmod 400 id_ec2.pem
-  
-      - name: Download build.env artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: build-env
-  
-      - name: Load IMAGE_TAG from build.env into environment
-        run: |
-          set -a
-          source build.env      # loads IMAGE_TAG into shell
-          set +a
-          echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_ENV
-
-      - name: Create docker-compose.yaml
-        run: |
-          cat > docker-compose-dev.yaml <<EOF
-          version: "3.3"
-          services:
-            app:
-              image: ${IMAGE_NAME}:${IMAGE_TAG}
-              ports:
-                - ${DC_APP_PORT}:3000
-          EOF
-              
-      - name: Deploy to dev via SSH
-        run: |
-          scp -o StrictHostKeyChecking=no -i id_ec2.pem ./docker-compose-dev.yaml ec2-user@${{ secrets.DEPLOY_HOST }}:/home/ec2-user/
-          ssh -o StrictHostKeyChecking=no \
-            -i id_ec2.pem \
-            ec2-user@${{ secrets.DEPLOY_HOST }} \
-            "echo '${{ secrets.DOCKER_TOKEN }}' | docker login ghcr.io -u '${{ github.actor }}' --password-stdin && export COMPOSE_PROJECT_NAME=${{ env.COMPOSE_PROJECT_NAME }} && docker compose -f docker-compose-dev.yaml down && docker compose -f docker-compose-dev.yaml up -d"
-
+    uses: ./.github/workflows/deploy.yml
+    with:
+      runs_on: '["self-hosted","local"]'
+      env_name: "development"
+      endpoint: ${{ vars.DEV_ENDPOINT }}
+      dc_app_port: 3000
+      compose_project_name: "dev"
+      compose_file_name: "docker-compose-dev.yaml"
+    secrets: 
+      SSH_HOST: ${{ secrets.DEPLOY_HOST }}
+      CONNECT_EC2: ${{ secrets.CONNECT_EC2 }}
+      DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
+      
   deploy_to_staging:
     needs: build_and_push_image
-    runs-on: [self-hosted, local]
-    # runs-on: ubuntu-latest
-
-    environment:
-      name: staging
-      url: ${{ vars.STAGING_ENDPOINT }}
-
-    env:
-      IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}/microservice/${{ vars.MICRO_SERVICE_NAME }}
-      DC_APP_PORT: 4000
-      COMPOSE_PROJECT_NAME: staging
-  
-    steps:
-      - name: Fix permissions in workspace
-        run: sudo chown -R $USER:$USER $GITHUB_WORKSPACE
-
-      - name: Write SSH key to file
-        run: |
-          echo "${{ secrets.CONNECT_EC2 }}" > id_ec2.pem
-          chmod 400 id_ec2.pem
-  
-      - name: Download build.env artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: build-env
-  
-      - name: Load IMAGE_TAG from build.env into environment
-        run: |
-          set -a
-          source build.env      # loads IMAGE_TAG into shell
-          set +a
-          echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_ENV
-
-      - name: Create docker-compose.yaml
-        run: |
-          cat > docker-compose-stg.yaml <<EOF
-          version: "3.3"
-          services:
-            app:
-              image: ${IMAGE_NAME}:${IMAGE_TAG}
-              ports:
-                - ${DC_APP_PORT}:3000
-          EOF
-              
-      - name: Deploy to staging via SSH
-        run: |
-          scp -o StrictHostKeyChecking=no -i id_ec2.pem ./docker-compose-stg.yaml ec2-user@${{ secrets.STAGING_HOST }}:/home/ec2-user/
-          ssh -o StrictHostKeyChecking=no \
-            -i id_ec2.pem \
-            ec2-user@${{ secrets.STAGING_HOST }} \
-            "echo '${{ secrets.DOCKER_TOKEN }}' | docker login ghcr.io -u '${{ github.actor }}' --password-stdin && export COMPOSE_PROJECT_NAME=${{ env.COMPOSE_PROJECT_NAME }} && docker compose -f docker-compose-stg.yaml down && docker compose -f docker-compose-stg.yaml up -d"
+    uses: ./.github/workflows/deploy.yml
+    with:
+      runs_on: '["self-hosted","local"]'
+      env_name: "staging"
+      endpoint: ${{ vars.STAGING_ENDPOINT }}
+      dc_app_port: 4000
+      compose_project_name: "staging"
+      compose_file_name: "docker-compose-stg.yaml"
+    secrets: 
+      SSH_HOST: ${{ secrets.STAGING_HOST }}
+      CONNECT_EC2: ${{ secrets.CONNECT_EC2 }}
+      DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
