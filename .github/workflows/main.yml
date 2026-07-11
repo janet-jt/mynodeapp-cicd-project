@@ -131,6 +131,7 @@ jobs:
     env:
       IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}/microservice/${{ vars.MICRO_SERVICE_NAME }}
       DC_APP_PORT: 3000
+      COMPOSE_PROJECT_NAME: dev
   
     steps:
       - name: Fix permissions in workspace
@@ -170,7 +171,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no \
             -i id_ec2.pem \
             ec2-user@${{ secrets.DEPLOY_HOST }} \
-            "echo '${{ secrets.DOCKER_TOKEN }}' | docker login ghcr.io -u '${{ github.actor }}' --password-stdin && docker compose -f docker-compose-dev.yaml down && docker compose -f docker-compose-dev.yaml up -d"
+            "echo '${{ secrets.DOCKER_TOKEN }}' | docker login ghcr.io -u '${{ github.actor }}' --password-stdin && export COMPOSE_PROJECT_NAME=${{ env.COMPOSE_PROJECT_NAME }} && docker compose -f docker-compose-dev.yaml down && docker compose -f docker-compose-dev.yaml up -d"
 
   deploy_to_staging:
     needs: build_and_push_image
@@ -184,6 +185,7 @@ jobs:
     env:
       IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}/microservice/${{ vars.MICRO_SERVICE_NAME }}
       DC_APP_PORT: 4000
+      COMPOSE_PROJECT_NAME: staging
   
     steps:
       - name: Fix permissions in workspace
@@ -223,4 +225,4 @@ jobs:
           ssh -o StrictHostKeyChecking=no \
             -i id_ec2.pem \
             ec2-user@${{ secrets.STAGING_HOST }} \
-            "echo '${{ secrets.DOCKER_TOKEN }}' | docker login ghcr.io -u '${{ github.actor }}' --password-stdin && docker compose -f docker-compose-stg.yaml down && docker compose -f docker-compose-stg.yaml up -d"
+            "echo '${{ secrets.DOCKER_TOKEN }}' | docker login ghcr.io -u '${{ github.actor }}' --password-stdin && export COMPOSE_PROJECT_NAME=${{ env.COMPOSE_PROJECT_NAME }} && docker compose -f docker-compose-stg.yaml down && docker compose -f docker-compose-stg.yaml up -d"
