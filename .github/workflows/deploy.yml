@@ -47,6 +47,7 @@ jobs:
 
       - name: Write SSH key to file
         run: |
+          cd "$GITHUB_WORKSPACE"
           echo "${{ secrets.CONNECT_EC2 }}" > id_ec2.pem
           chmod 400 id_ec2.pem
 
