@@ -138,7 +138,7 @@ jobs:
       DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
       
   deploy_to_staging:
-    needs: build_and_push_image
+    needs: deploy_to_dev
     uses: ./.github/workflows/deploy.yml
     with:
       # runs_on: '"ubuntu-latest"'
