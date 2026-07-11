@@ -131,6 +131,7 @@ jobs:
       dc_app_port: 3000
       compose_project_name: "dev"
       compose_file_name: "docker-compose-dev.yaml"
+      ssh_key_name: "dev-ssh-key.pem"
     secrets: 
       SSH_HOST: ${{ secrets.DEPLOY_HOST }}
       CONNECT_EC2: ${{ secrets.CONNECT_EC2 }}
@@ -147,7 +148,37 @@ jobs:
       dc_app_port: 4000
       compose_project_name: "staging"
       compose_file_name: "docker-compose-stg.yaml"
+      ssh_key_name: "stg-ssh-key.pem"
+
     secrets: 
       SSH_HOST: ${{ secrets.STAGING_HOST }}
+      CONNECT_EC2: ${{ secrets.CONNECT_EC2 }}
+      DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
+
+  run_performance_tests:
+    needs: deploy_to_staging
+    runs-on: [self-hosted, local]
+  
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run performance test
+        run: echo "running performance testing"
+
+  deploy_to_prod:
+    needs: run_performance_tests
+    uses: ./.github/workflows/deploy.yml
+    with:
+      # runs_on: '"ubuntu-latest"'
+      runs_on: '["self-hosted","local"]'
+      env_name: "prod"
+      endpoint: ${{ vars.PROD_ENDPOINT }}
+      ssh_key_name: "prod-ssh-key.pem"
+      dc_app_port: 4000
+      compose_project_name: "prod"
+      compose_file_name: "docker-compose-prod.yaml"
+    secrets: 
+      SSH_HOST: ${{ secrets.PROD_HOST }}
       CONNECT_EC2: ${{ secrets.CONNECT_EC2 }}
       DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
