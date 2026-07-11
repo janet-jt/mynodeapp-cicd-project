@@ -32,7 +32,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: ${{ inputs.runs_on }}
+    runs-on: ${{ fromJson(inputs.runs_on) }}
     environment:
       name: ${{ inputs.env_name }}
       url: ${{ inputs.endpoint }}
