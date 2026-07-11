@@ -175,7 +175,7 @@ jobs:
       env_name: "prod"
       endpoint: ${{ vars.PROD_ENDPOINT }}
       ssh_key_name: "prod-ssh-key.pem"
-      dc_app_port: 4000
+      dc_app_port: 5000
       compose_project_name: "prod"
       compose_file_name: "docker-compose-prod.yaml"
     secrets: 
