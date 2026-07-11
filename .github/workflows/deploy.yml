@@ -3,6 +3,9 @@ name: Deploy microservice
 on:
   workflow_call:
     inputs:
+      runs_on:
+        required: true
+        type: string
       env_name:
         required: true
         type: string
@@ -29,7 +32,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runs_on }}
     environment:
       name: ${{ inputs.env_name }}
       url: ${{ inputs.endpoint }}
