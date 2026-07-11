@@ -167,10 +167,16 @@ jobs:
         run: echo "running performance testing"
 
   deploy_to_prod:
+    on:
+    workflow_dispatch:
+      inputs:
+        image_tag:
+          description: "Deploy to production"
+          required: true
+          type: string
     needs: run_performance_tests
     uses: ./.github/workflows/deploy.yml
     with:
-      # runs_on: '"ubuntu-latest"'
       runs_on: '["self-hosted","local"]'
       env_name: "prod"
       endpoint: ${{ vars.PROD_ENDPOINT }}
