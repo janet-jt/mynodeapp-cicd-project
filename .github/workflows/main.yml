@@ -175,8 +175,8 @@ jobs:
 
   deploy_to_staging:
     needs: build_and_push_image
-    # runs-on: [self-hosted, local]
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, local]
+    # runs-on: ubuntu-latest
 
     environment:
       name: staging
